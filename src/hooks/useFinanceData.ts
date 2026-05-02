@@ -5,6 +5,7 @@ import type { FinanceSummary, Transaction } from '../types/finance';
 
 export const useFinanceData = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [importedFiles, setImportedFiles] = useState<string[]>([]);
 
   const addTransaction = (transaction: Transaction) => {
     setTransactions(prev => [...prev, transaction]);
@@ -14,6 +15,7 @@ export const useFinanceData = () => {
     try {
       const newTransactions = await parseCsv(file);
       setTransactions(prev => [...prev, ...newTransactions]);
+      setImportedFiles(prev => [...prev, file.name]);
     } catch (error) {
       console.error('Error parsing CSV', error);
       alert('Erro ao importar arquivo CSV.');
@@ -63,6 +65,7 @@ export const useFinanceData = () => {
     transactions,
     summary,
     topExpenses,
+    importedFiles,
     addTransaction,
     importTransactions,
     deleteTransaction

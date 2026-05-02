@@ -7,13 +7,22 @@ import { TransactionModal } from './TransactionModal';
 import { Plus, Upload, Wallet } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, addTransaction, deleteTransaction, importTransactions } = useFinanceData();
+  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions } = useFinanceData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (importedFiles.includes(file.name)) {
+        setAlertMessage(`arquivo '${file.name}' já importado`);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+
       await importTransactions(file);
       // Reset input
       if (fileInputRef.current) {
@@ -91,6 +100,23 @@ export const Dashboard: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={addTransaction}
       />
+
+      {alertMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Aviso</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              {alertMessage}
+            </p>
+            <button
+              onClick={() => setAlertMessage(null)}
+              className="w-full px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium text-sm shadow-sm"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
