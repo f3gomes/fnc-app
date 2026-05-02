@@ -1,13 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { SummaryCards } from './SummaryCards';
 import { TopExpenses } from './TopExpenses';
 import { TransactionList } from './TransactionList';
+import { TransactionModal } from './TransactionModal';
 import { Plus, Upload, Wallet } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, deleteTransaction, importTransactions } = useFinanceData();
+  const { transactions, summary, topExpenses, addTransaction, deleteTransaction, importTransactions } = useFinanceData();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,7 +53,10 @@ export const Dashboard: React.FC = () => {
               <Upload className="w-4 h-4" />
               Importar CSV
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
+            >
               <Plus className="w-4 h-4" />
               Nova Transação
             </button>
@@ -80,6 +85,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
       </div>
+
+      <TransactionModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={addTransaction}
+      />
     </div>
   );
 };
