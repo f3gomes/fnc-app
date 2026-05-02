@@ -76,7 +76,14 @@ export const useFinanceData = () => {
   }, [transactions]);
 
   const topExpenses = useMemo(() => {
-    const expenses = transactions.filter(t => t.type === 'expense');
+    const expenses = transactions.filter(t => {
+      if (t.type !== 'expense') return false;
+      const lowerDesc = t.description.toLowerCase();
+      if (lowerDesc.includes('pagamento efetuado') || lowerDesc.includes('pagamento de fatura')) {
+        return false;
+      }
+      return true;
+    });
     return expenses
       .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
       .slice(0, 5); // Top 5
