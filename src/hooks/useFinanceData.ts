@@ -1,11 +1,25 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 import { parseCsv } from '../utils/csvParser';
 import type { FinanceSummary, Transaction } from '../types/finance';
 
 export const useFinanceData = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [importedFiles, setImportedFiles] = useState<string[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const saved = localStorage.getItem('@finance:transactions');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [importedFiles, setImportedFiles] = useState<string[]>(() => {
+    const saved = localStorage.getItem('@finance:importedFiles');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('@finance:transactions', JSON.stringify(transactions));
+  }, [transactions]);
+
+  useEffect(() => {
+    localStorage.setItem('@finance:importedFiles', JSON.stringify(importedFiles));
+  }, [importedFiles]);
 
   const addTransaction = (transaction: Transaction) => {
     setTransactions(prev => [...prev, transaction]);
@@ -24,6 +38,13 @@ export const useFinanceData = () => {
 
   const deleteTransaction = (id: string) => {
     setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const clearAllData = () => {
+    setTransactions([]);
+    setImportedFiles([]);
+    localStorage.removeItem('@finance:transactions');
+    localStorage.removeItem('@finance:importedFiles');
   };
 
   const summary = useMemo<FinanceSummary>(() => {
@@ -68,6 +89,7 @@ export const useFinanceData = () => {
     importedFiles,
     addTransaction,
     importTransactions,
-    deleteTransaction
+    deleteTransaction,
+    clearAllData
   };
 };

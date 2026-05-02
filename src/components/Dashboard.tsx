@@ -4,13 +4,14 @@ import { SummaryCards } from './SummaryCards';
 import { TopExpenses } from './TopExpenses';
 import { TransactionList } from './TransactionList';
 import { TransactionModal } from './TransactionModal';
-import { Plus, Upload, Wallet } from 'lucide-react';
+import { Plus, Upload, Wallet, Trash2 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions } = useFinanceData();
+  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData } = useFinanceData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -48,6 +49,14 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsClearModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors shadow-sm md:flex"
+              title="Limpar todos os dados"
+            >
+              <Trash2 className="w-4 h-4" />
+              Limpar Dados
+            </button>
             <input
               type="file"
               accept=".csv"
@@ -62,7 +71,7 @@ export const Dashboard: React.FC = () => {
               <Upload className="w-4 h-4" />
               Importar CSV
             </button>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
             >
@@ -95,7 +104,7 @@ export const Dashboard: React.FC = () => {
 
       </div>
 
-      <TransactionModal 
+      <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={addTransaction}
@@ -114,6 +123,33 @@ export const Dashboard: React.FC = () => {
             >
               Entendi
             </button>
+          </div>
+        </div>
+      )}
+      {isClearModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl w-full max-w-sm shadow-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Limpar Todos os Dados</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Tem certeza que deseja excluir todas as transações e o histórico de importação? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsClearModalOpen(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  clearAllData();
+                  setIsClearModalOpen(false);
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+              >
+                Excluir Tudo
+              </button>
+            </div>
           </div>
         </div>
       )}
