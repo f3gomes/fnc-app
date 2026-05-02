@@ -68,7 +68,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className={`font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                  <span className={`font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                     {t.type === 'income' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(t.amount))}
                   </span>
                 </td>

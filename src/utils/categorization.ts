@@ -6,7 +6,7 @@ const fixedKeywords = [
   'mensalidade', 'escola', 'academia', 'vivo', 'claro', 'tim'
 ];
 
-const categoryKeywords: Record<Category, string[]> = {
+export const categoryKeywords: Record<Category, string[]> = {
   Housing: ['aluguel', 'condominio', 'condomínio', 'luz', 'agua', 'água', 'internet', 'energia', 'gas', 'gás'],
   Food: ['ifood', 'rappi', 'supermercado', 'mercado', 'padaria', 'restaurante', 'mcdonalds', 'burger king', 'pizza', 'carrefour', 'extra', 'pao de acucar'],
   Transport: ['uber', '99', 'posto', 'combustivel', 'gasolina', 'estacionamento', 'ipva', 'seguro auto', 'pedagio'],
@@ -17,11 +17,14 @@ const categoryKeywords: Record<Category, string[]> = {
   Other: []
 };
 
-export const inferCategoryAndType = (description: string, value: number): { category: Category, type: TransactionType, isFixed: boolean } => {
+export const inferCategoryAndType = (description: string, value: number, isCreditCard: boolean = false): { category: Category, type: TransactionType, isFixed: boolean } => {
   const lowerDesc = description.toLowerCase();
 
   // Basic type inference from value
-  const type: TransactionType = value >= 0 ? 'income' : 'expense';
+  // If it's a credit card bill, positive values are charges (expenses)
+  const type: TransactionType = isCreditCard 
+    ? (value >= 0 ? 'expense' : 'income')
+    : (value >= 0 ? 'income' : 'expense');
 
   // Check for installments in credit card (e.g., "01/12", "1/5", "compra parcelada")
   const installmentRegex = /\b\d{1,2}\/\d{1,2}\b/g;
