@@ -47,7 +47,7 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
       complete: (results) => {
         const transactions: Transaction[] = [];
 
-        results.data.forEach((row: any) => {
+        results.data.forEach((row: Record<string, string>) => {
           // Heuristic to find columns
           // Keys in lower case to make matching easier
           const keys = Object.keys(row);
