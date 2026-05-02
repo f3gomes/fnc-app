@@ -84,7 +84,19 @@ export const useFinanceData = () => {
       }
       return true;
     });
-    return expenses
+
+    const grouped = expenses.reduce((acc, t) => {
+      const key = t.description.trim().toLowerCase();
+      if (!acc[key]) {
+        acc[key] = { ...t, subTransactions: [t] };
+      } else {
+        acc[key].amount += t.amount;
+        acc[key].subTransactions.push(t);
+      }
+      return acc;
+    }, {} as Record<string, Transaction & { subTransactions: Transaction[] }>);
+
+    return Object.values(grouped)
       .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
       .slice(0, 5); // Top 5
   }, [transactions]);
