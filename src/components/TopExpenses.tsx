@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Flame } from 'lucide-react';
+import { Flame, Calendar, Tag, AlertCircle, FileText } from 'lucide-react';
 import type { Transaction } from '../types/finance';
 
 interface TopExpensesProps {
@@ -8,6 +8,8 @@ interface TopExpensesProps {
 }
 
 export const TopExpenses: React.FC<TopExpensesProps> = ({ expenses }) => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   if (expenses.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center justify-center min-h-[300px]">
@@ -16,6 +18,10 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({ expenses }) => {
       </div>
     );
   }
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(prev => (prev === id ? null : id));
+  };
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
@@ -30,10 +36,15 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({ expenses }) => {
         {expenses.map((expense, index) => {
           const maxAmount = Math.abs(expenses[0].amount);
           const percentage = (Math.abs(expense.amount) / maxAmount) * 100;
+          const isExpanded = expandedId === expense.id;
 
           return (
-            <div key={expense.id} className="relative">
-              <div className="flex justify-between items-center mb-1 relative z-10">
+            <div
+              key={expense.id}
+              className={`relative p-3 -mx-3 rounded-xl transition-colors cursor-pointer ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
+              onClick={() => toggleExpand(expense.id)}
+            >
+              <div className="flex justify-between items-center mb-2 relative z-10">
                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate pr-4 max-w-[200px]" title={expense.description}>
                   {index + 1}. {expense.description}
                 </span>
@@ -47,6 +58,32 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({ expenses }) => {
                   style={{ width: `${percentage}%`, opacity: Math.max(0.4, 1 - index * 0.15) }}
                 />
               </div>
+
+              {/* Dropdown Details */}
+              {isExpanded && (
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50 flex flex-col gap-2 text-xs animate-in slide-in-from-top-2 fade-in duration-200">
+                  <div className="flex items-start gap-1.5 text-gray-600 dark:text-gray-400">
+                    <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span className="wrap-break-word whitespace-normal">{expense.description}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{new Date(expense.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span>{expense.category}</span>
+                    </div>
+                  </div>
+                  {expense.isFixed && (
+                    <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 mt-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Despesa Fixa</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
