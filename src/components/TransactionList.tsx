@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Tag, Calendar, Trash2 } from 'lucide-react';
-import type { Transaction } from '../types/finance';
+import type { Category, Transaction } from '../types/finance';
+import { cn } from '../utils/cn';
 
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<Transaction>) => void;
 }
 
-export const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelete }) => {
+export const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelete, onUpdate }) => {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [categoryModal, setCategoryModal] = useState<null | string>(null);
+  const [toggleFixedModal, setToggleFixedModal] = useState<null | string>(null);
+
 
   if (transactions.length === 0) {
     return (
@@ -19,7 +24,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
     );
   }
 
-  // Sort by date descending
   const sorted = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
@@ -39,6 +43,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
               <th scope="col" className="px-6 py-4 font-medium text-center">Ações</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {sorted.map((t) => (
               <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -49,7 +54,18 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100">{t.description}</p>
-                      {t.isFixed && <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">Gasto Fixo</span>}
+
+                      <button
+                        onClick={() => setToggleFixedModal(t.id)}
+                        className={cn(
+                          "inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full hover:opacity-80 transition-colors",
+                          t.isFixed
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                        )}
+                      >
+                        {t.isFixed ? 'Gasto Fixo' : 'Gasto Variável'}
+                      </button>
                     </div>
                   </div>
                 </td>
@@ -62,9 +78,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-gray-400" />
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    <button
+                      onClick={() => setCategoryModal(t.id)}
+                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:opacity-80"
+                    >
                       {t.category}
-                    </span>
+                    </button>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -86,6 +105,89 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
           </tbody>
         </table>
       </div>
+
+      {toggleFixedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-2">
+              Alterar tipo de gasto
+            </h3>
+
+            <p className="text-sm text-gray-500 mb-6">
+              Deseja alterar este gasto para{' '}
+              {transactions.find(t => t.id === toggleFixedModal)?.isFixed
+                ? 'variável'
+                : 'fixo'}
+              ?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setToggleFixedModal(null)}
+                className="flex-1 border rounded-lg py-2"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={() => {
+                  const transaction = transactions.find(
+                    t => t.id === toggleFixedModal
+                  );
+
+                  if (transaction) {
+                    onUpdate(toggleFixedModal, {
+                      isFixed: !transaction.isFixed,
+                    });
+                  }
+
+                  setToggleFixedModal(null);
+                }}
+                className="flex-1 bg-purple-600 text-white rounded-lg py-2"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {categoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4">Alterar categoria</h3>
+
+            <select
+              defaultValue={transactions.find(t => t.id === categoryModal)?.category}
+              onChange={(e) => {
+                setCategoryModal(null);
+                onUpdate(categoryModal, {
+                  category: e.target.value as Category,
+                });
+              }}
+              className={cn(
+                "w-full p-2 rounded-md border text-sm",
+                "bg-white text-gray-900 border-gray-300",
+                "dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500"
+              )}
+            >
+              <option value="food">Alimentação</option>
+              <option value="transport">Transporte</option>
+              <option value="housing">Moradia</option>
+              <option value="salary">Salário</option>
+              <option value="other">Outros</option>
+            </select>
+
+            <button
+              onClick={() => setCategoryModal(null)}
+              className="mt-4 text-sm text-white flex-1 border rounded-lg py-2 px-4"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {itemToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

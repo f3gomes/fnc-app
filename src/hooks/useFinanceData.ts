@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-
 import { parseCsv } from '../utils/csvParser';
 import type { FinanceSummary, Transaction } from '../types/finance';
 
@@ -53,7 +52,6 @@ export const useFinanceData = () => {
         if (t.type === 'income') {
           acc.totalIncome += t.amount;
         } else {
-          // ensure amount is positive for expenses in the summary
           const amount = Math.abs(t.amount);
           acc.totalExpense += amount;
           if (t.isFixed) {
@@ -101,6 +99,12 @@ export const useFinanceData = () => {
       .slice(0, 5); // Top 5
   }, [transactions]);
 
+  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
+    setTransactions(prev =>
+      prev.map(t => (t.id === id ? { ...t, ...updates } : t))
+    );
+  };
+
   return {
     transactions,
     summary,
@@ -109,6 +113,7 @@ export const useFinanceData = () => {
     addTransaction,
     importTransactions,
     deleteTransaction,
-    clearAllData
+    clearAllData,
+    updateTransaction
   };
 };

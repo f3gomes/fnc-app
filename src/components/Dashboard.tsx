@@ -7,7 +7,7 @@ import { TransactionModal } from './TransactionModal';
 import { Plus, Upload, Wallet, Trash2 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData } = useFinanceData();
+  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData, updateTransaction } = useFinanceData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -25,7 +25,6 @@ export const Dashboard: React.FC = () => {
       }
 
       await importTransactions(file);
-      // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -36,7 +35,6 @@ export const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black shadow-lg">
@@ -81,13 +79,11 @@ export const Dashboard: React.FC = () => {
           </div>
         </header>
 
-        {/* Resumo */}
         <SummaryCards summary={summary} />
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <TransactionList transactions={transactions} onDelete={deleteTransaction} />
+            <TransactionList transactions={transactions} onDelete={deleteTransaction} onUpdate={updateTransaction} />
           </div>
           <div className="lg:col-span-1 space-y-8">
             <TopExpenses expenses={topExpenses} />
