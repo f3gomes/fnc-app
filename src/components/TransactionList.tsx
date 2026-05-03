@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Tag, Calendar, Trash2 } from 'lucide-react';
 import type { Category, Transaction } from '../types/finance';
+import { ToggleFixedModal } from './ToggleFixedModal';
+import { CategoryModal } from './CategoryModal';
+import { DeleteTransactionModal } from './DeleteTransactionModal';
 import { cn } from '../utils/cn';
 
 interface TransactionListProps {
@@ -14,6 +17,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
   const [categoryModal, setCategoryModal] = useState<null | string>(null);
   const [toggleFixedModal, setToggleFixedModal] = useState<null | string>(null);
 
+  const sorted = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const selectedTransactionId = toggleFixedModal ?? categoryModal;
+
+  const selectedTransaction = useMemo(
+    () => transactions.find(t => t.id === selectedTransactionId),
+    [transactions, selectedTransactionId]
+  );
 
   if (transactions.length === 0) {
     return (
@@ -23,8 +34,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
       </div>
     );
   }
-
-  const sorted = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -106,116 +115,42 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
         </table>
       </div>
 
-      {toggleFixedModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-2">
-              Alterar tipo de gasto
-            </h3>
+      <ToggleFixedModal
+        isOpen={!!toggleFixedModal && !!selectedTransaction}
+        isFixed={!!selectedTransaction?.isFixed}
+        onClose={() => setToggleFixedModal(null)}
+        onConfirm={() => {
+          if (selectedTransaction) {
+            onUpdate(selectedTransaction.id, {
+              isFixed: !selectedTransaction.isFixed,
+            });
+          }
+          setToggleFixedModal(null);
+        }}
+      />
 
-            <p className="text-sm text-gray-500 mb-6">
-              Deseja alterar este gasto para{' '}
-              {transactions.find(t => t.id === toggleFixedModal)?.isFixed
-                ? 'variável'
-                : 'fixo'}
-              ?
-            </p>
+      <CategoryModal
+        isOpen={!!categoryModal && !!selectedTransaction}
+        currentCategory={selectedTransaction?.category as Category}
+        onClose={() => setCategoryModal(null)}
+        onChange={(category) => {
+          if (selectedTransaction) {
+            onUpdate(selectedTransaction.id, { category });
+          }
+          setCategoryModal(null);
+        }}
+      />
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setToggleFixedModal(null)}
-                className="flex-1 border rounded-lg py-2"
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={() => {
-                  const transaction = transactions.find(
-                    t => t.id === toggleFixedModal
-                  );
-
-                  if (transaction) {
-                    onUpdate(toggleFixedModal, {
-                      isFixed: !transaction.isFixed,
-                    });
-                  }
-
-                  setToggleFixedModal(null);
-                }}
-                className="flex-1 bg-purple-600 text-white rounded-lg py-2"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {categoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-4">Alterar categoria</h3>
-
-            <select
-              defaultValue={transactions.find(t => t.id === categoryModal)?.category}
-              onChange={(e) => {
-                setCategoryModal(null);
-                onUpdate(categoryModal, {
-                  category: e.target.value as Category,
-                });
-              }}
-              className={cn(
-                "w-full p-2 rounded-md border text-sm",
-                "bg-white text-gray-900 border-gray-300",
-                "dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500"
-              )}
-            >
-              <option value="food">Alimentação</option>
-              <option value="transport">Transporte</option>
-              <option value="housing">Moradia</option>
-              <option value="salary">Salário</option>
-              <option value="other">Outros</option>
-            </select>
-
-            <button
-              onClick={() => setCategoryModal(null)}
-              className="mt-4 text-sm text-white flex-1 border rounded-lg py-2 px-4"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {itemToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl w-full max-w-sm shadow-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Excluir Transação</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setItemToDelete(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  onDelete(itemToDelete);
-                  setItemToDelete(null);
-                }}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-              >
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteTransactionModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete) {
+            onDelete(itemToDelete);
+          }
+          setItemToDelete(null);
+        }}
+      />
     </div>
   );
 };
