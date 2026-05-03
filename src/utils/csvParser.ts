@@ -1,9 +1,10 @@
-import Papa from 'papaparse';
+import Papa, { type ParseResult } from 'papaparse';
 
 import { inferCategoryAndType, categoryKeywords } from './categorization';
 import type { Transaction } from '../types/finance';
 
-// Helper to check if it's an obvious expense
+type CsvRow = Record<string, string | undefined>;
+
 const isObviousExpense = (desc: string): boolean => {
   const lowerDesc = desc.toLowerCase();
   for (const [category, keywords] of Object.entries(categoryKeywords)) {
@@ -15,15 +16,11 @@ const isObviousExpense = (desc: string): boolean => {
   return false;
 };
 
-// Helper to generate unique IDs
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
-// Normalize value from string (e.g., "R$ -1.500,00" or "-1500.00") to number
 const normalizeValue = (val: string): number => {
   if (!val) return 0;
-  // Remove R$, spaces, etc.
   let cleaned = val.replace(/[R$\s]/g, '');
-  // Handle Brazilian format: -1.500,00 -> -1500.00
   if (cleaned.includes(',') && cleaned.includes('.')) {
     cleaned = cleaned.replace(/\./g, '').replace(',', '.');
   } else if (cleaned.includes(',')) {
@@ -33,17 +30,15 @@ const normalizeValue = (val: string): number => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Normalize date from DD/MM/YYYY to YYYY-MM-DD
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return new Date().toISOString().split('T')[0];
   const parts = dateStr.split('/');
   if (parts.length === 3) {
-    // DD/MM/YYYY or MM/DD/YYYY? Assuming Brazilian DD/MM/YYYY
     const [day, month, year] = parts;
     const fullYear = year.length === 2 ? `20${year}` : year;
     return `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-  // Try to parse normally if it's not DD/MM/YYYY
+
   const parsed = new Date(dateStr);
   if (!isNaN(parsed.getTime())) {
     return parsed.toISOString().split('T')[0];
@@ -54,20 +49,19 @@ const normalizeDate = (dateStr: string): string => {
 export const parseCsv = (file: File): Promise<Transaction[]> => {
   return new Promise((resolve, reject) => {
     const lowerName = file.name.toLowerCase();
-    const isNameCreditCard = lowerName.includes('fatura') || 
-                             lowerName.includes('cartao') || 
-                             lowerName.includes('cartão') || 
-                             lowerName.includes('credit');
+    const isNameCreditCard = lowerName.includes('fatura') ||
+      lowerName.includes('cartao') ||
+      lowerName.includes('cartão') ||
+      lowerName.includes('credit');
 
-    Papa.parse(file, {
+    Papa.parse<CsvRow>(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: (results: ParseResult<CsvRow>) => {
         let positiveValuesCount = 0;
         let obviousExpensesInPositiveValues = 0;
 
-        const parsedRows = results.data.map((row: Record<string, string>) => {
-          // Heuristic to find columns
+        const parsedRows = results.data.map((row) => {
           const keys = Object.keys(row);
           const lowerKeys = keys.map(k => k.toLowerCase().trim());
 
@@ -84,7 +78,7 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
           const rawValue = row[valueKey] || '0';
 
           const value = normalizeValue(rawValue);
-          
+
           if (value === 0) return null;
 
           if (value > 0) {
@@ -97,8 +91,6 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
           return { rawDate, rawDesc, value };
         }).filter(Boolean) as { rawDate: string, rawDesc: string, value: number }[];
 
-        // If it's a credit card, we usually have positive values for expenses.
-        // If more than 30% of positive values are obvious expenses, it's very likely a credit card bill.
         const isPatternCreditCard = positiveValuesCount > 0 && (obviousExpensesInPositiveValues / positiveValuesCount) >= 0.3;
 
         const isCreditCard = isNameCreditCard || isPatternCreditCard;
