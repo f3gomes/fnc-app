@@ -105,6 +105,65 @@ export const useFinanceData = () => {
     );
   };
 
+  const exportToJson = () => {
+    try {
+      const data = {
+        transactions,
+        importedFiles,
+      };
+
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finance-backup-${new Date().toISOString()}.json`;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar JSON', error);
+      alert('Erro ao exportar dados.');
+    }
+  };
+
+  const importFromJson = async (file: File) => {
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      if (
+        !parsed ||
+        !Array.isArray(parsed.transactions) ||
+        !Array.isArray(parsed.importedFiles)
+      ) {
+        throw new Error('Formato inválido');
+      }
+
+      const isValidTransaction = (t: Transaction): t is Transaction => {
+        return (
+          typeof t.id === 'string' &&
+          typeof t.date === 'string' &&
+          typeof t.description === 'string' &&
+          typeof t.amount === 'number' &&
+          (t.type === 'income' || t.type === 'expense') &&
+          typeof t.category === 'string' &&
+          typeof t.isFixed === 'boolean'
+        );
+      };
+
+      const validTransactions = parsed.transactions.filter(isValidTransaction);
+
+      setTransactions(validTransactions);
+      setImportedFiles(parsed.importedFiles);
+
+    } catch (error) {
+      console.error('Erro ao importar JSON', error);
+      alert('Arquivo JSON inválido.');
+    }
+  };
+
   return {
     transactions,
     summary,
@@ -114,6 +173,8 @@ export const useFinanceData = () => {
     importTransactions,
     deleteTransaction,
     clearAllData,
-    updateTransaction
+    updateTransaction,
+    exportToJson,
+    importFromJson
   };
 };

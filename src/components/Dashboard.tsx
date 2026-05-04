@@ -4,14 +4,16 @@ import { SummaryCards } from './SummaryCards';
 import { TopExpenses } from './TopExpenses';
 import { TransactionList } from './TransactionList';
 import { TransactionModal } from './TransactionModal';
-import { Plus, Upload, Wallet, Trash2 } from 'lucide-react';
+import { Plus, Upload, Wallet, Trash2, Download } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData, updateTransaction } = useFinanceData();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData, updateTransaction, exportToJson, importFromJson } = useFinanceData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -27,6 +29,24 @@ export const Dashboard: React.FC = () => {
       await importTransactions(file);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleJsonUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (importedFiles.includes(file.name)) {
+        setAlertMessage(`arquivo '${file.name}' já importado`);
+        if (jsonInputRef.current) {
+          jsonInputRef.current.value = '';
+        }
+        return;
+      }
+
+      await importFromJson(file);
+      if (jsonInputRef.current) {
+        jsonInputRef.current.value = '';
       }
     }
   };
@@ -55,6 +75,7 @@ export const Dashboard: React.FC = () => {
               <Trash2 className="w-4 h-4" />
               Limpar Dados
             </button>
+
             <input
               type="file"
               accept=".csv"
@@ -62,6 +83,7 @@ export const Dashboard: React.FC = () => {
               ref={fileInputRef}
               onChange={handleFileUpload}
             />
+
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
@@ -69,6 +91,7 @@ export const Dashboard: React.FC = () => {
               <Upload className="w-4 h-4" />
               Importar CSV
             </button>
+
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
@@ -76,6 +99,41 @@ export const Dashboard: React.FC = () => {
               <Plus className="w-4 h-4" />
               Nova Transação
             </button>
+
+            <div className="relative group">
+              <button
+                onClick={exportToJson}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+
+              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-10 whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                Backup
+              </span>
+            </div>
+
+            <input
+              type="file"
+              accept=".json"
+              className="hidden"
+              ref={jsonInputRef}
+              onChange={handleJsonUpload}
+            />
+
+            <div className="relative group">
+              <button
+                onClick={() => jsonInputRef.current?.click()}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+
+              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-10 whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                Restaurar
+              </span>
+            </div>
+
           </div>
         </header>
 
