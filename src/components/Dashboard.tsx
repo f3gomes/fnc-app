@@ -61,19 +61,19 @@ export const Dashboard: React.FC = () => {
               <Wallet className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Controle Financeiro</h1>
+              <h1 className="text-2xl w-56 font-bold tracking-tight text-gray-900 dark:text-white">Controle Financeiro</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Visão geral das suas finanças</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => setIsClearModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors shadow-sm md:flex"
               title="Limpar todos os dados"
             >
               <Trash2 className="w-4 h-4" />
-              Limpar Dados
+              <span className="md:block hidden">Limpar Dados</span>
             </button>
 
             <input
@@ -89,7 +89,7 @@ export const Dashboard: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
             >
               <Upload className="w-4 h-4" />
-              Importar CSV
+              <span className="md:block hidden">Importar CSV</span>
             </button>
 
             <button
@@ -97,13 +97,13 @@ export const Dashboard: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              Nova Transação
+              <span className="md:block hidden">Nova Transação</span>
             </button>
 
             <div className="relative group">
               <button
                 onClick={exportToJson}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-[#2563EB]! dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-[#1D4ED8] dark:hover:bg-gray-800 transition-colors shadow-sm"
               >
                 <Download className="w-4 h-4" />
               </button>
@@ -124,7 +124,7 @@ export const Dashboard: React.FC = () => {
             <div className="relative group">
               <button
                 onClick={() => jsonInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-[#FB923C]! dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-[#EA580C]! dark:hover:bg-gray-800 transition-colors shadow-sm"
               >
                 <Upload className="w-4 h-4" />
               </button>
