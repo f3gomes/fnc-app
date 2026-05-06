@@ -1,6 +1,6 @@
 export type TransactionType = 'income' | 'expense';
 
-export type Category = 
+export type Category =
   | 'Housing'
   | 'Food'
   | 'Transport'
@@ -9,6 +9,21 @@ export type Category =
   | 'Leisure'
   | 'Income'
   | 'Other';
+
+export const categoryPtBrMap: Record<Category, string> = {
+  Housing: 'Moradia',
+  Food: 'Alimentação',
+  Transport: 'Transporte',
+  Health: 'Saúde',
+  Education: 'Educação',
+  Leisure: 'Lazer',
+  Income: 'Renda',
+  Other: 'Outros',
+};
+
+export const translateCategory = (category: Category): string => {
+  return categoryPtBrMap[category];
+};
 
 export interface Transaction {
   id: string;

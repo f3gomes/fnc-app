@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Tag, Calendar, Trash2 } from 'lucide-react';
-import type { Category, Transaction } from '../types/finance';
+import { translateCategory, type Category, type Transaction } from '../types/finance';
 import { ToggleFixedModal } from './ToggleFixedModal';
 import { CategoryModal } from './CategoryModal';
 import { DeleteTransactionModal } from './DeleteTransactionModal';
@@ -93,7 +93,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                       onClick={() => setCategoryModal(t.id)}
                       className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:opacity-80"
                     >
-                      {t.category}
+                      {translateCategory(t.category)}
                     </button>
                   </div>
                 </td>

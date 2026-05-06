@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '../utils/cn';
-import type { Category } from '../types/finance';
+import { categoryPtBrMap, type Category } from '../types/finance';
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -32,12 +32,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             "focus:outline-none focus:ring-2 focus:ring-blue-500"
           )}
         >
-          <option value="food">Alimentação</option>
-          <option value="transport">Transporte</option>
-          <option value="housing">Moradia</option>
-          <option value="salary">Salário</option>
-          <option value="other">Outros</option>
+          {Object.entries(categoryPtBrMap).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
+
 
         <button
           onClick={onClose}
