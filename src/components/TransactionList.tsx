@@ -64,17 +64,19 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100">{t.description}</p>
 
-                      <button
-                        onClick={() => setToggleFixedModal(t.id)}
-                        className={cn(
-                          "inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full hover:opacity-80 transition-colors",
-                          t.isFixed
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                        )}
-                      >
-                        {t.isFixed ? 'Gasto Fixo' : 'Gasto Variável'}
-                      </button>
+                      {t.type === 'expense' && (
+                        <button
+                          onClick={() => setToggleFixedModal(t.id)}
+                          className={cn(
+                            "inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full hover:opacity-80 transition-colors",
+                            t.isFixed
+                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                          )}
+                        >
+                          {t.isFixed ? 'Gasto Fixo' : 'Gasto Variável'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -96,8 +98,24 @@ export const TransactionList: React.FC<TransactionListProps> = ({ transactions, 
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className={`font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {t.type === 'income' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(t.amount))}
+                  <span
+                    className={cn(
+                      'font-semibold flex gap-1',
+                      t.type === 'income'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-red-600 dark:text-red-400'
+                    )}
+                  >
+                    <span>
+                      {t.type === 'income' ? '+' : '-'}{' '}
+                    </span>
+
+                    <span>
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(Math.abs(t.amount))}
+                    </span>
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center">
