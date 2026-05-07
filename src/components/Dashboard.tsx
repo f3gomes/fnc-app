@@ -1,52 +1,72 @@
-import React, { useRef, useState } from 'react';
-import { useFinanceData } from '../hooks/useFinanceData';
-import { SummaryCards } from './SummaryCards';
-import { TopExpenses } from './TopExpenses';
-import { TransactionList } from './TransactionList';
-import { TransactionModal } from './TransactionModal';
-import { Plus, Upload, Wallet, Trash2, Download } from 'lucide-react';
+import React, { useRef, useState } from "react";
+import { useFinanceData } from "../hooks/useFinanceData";
+import { SummaryCards } from "./SummaryCards";
+import { TopExpenses } from "./TopExpenses";
+import { TransactionList } from "./TransactionList";
+import { TransactionModal } from "./TransactionModal";
+import { Plus, Upload, Wallet, Trash2, Download } from "lucide-react";
+import { ConfirmModal } from "./ConfirmModal";
 
 export const Dashboard: React.FC = () => {
-  const { transactions, summary, topExpenses, importedFiles, addTransaction, deleteTransaction, importTransactions, clearAllData, updateTransaction, exportToJson, importFromJson } = useFinanceData();
+  const {
+    transactions,
+    summary,
+    topExpenses,
+    importedFiles,
+    addTransaction,
+    deleteTransaction,
+    importTransactions,
+    clearAllData,
+    updateTransaction,
+    exportToJson,
+    importFromJson,
+  } = useFinanceData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
+  const [isModalBackupOpen, setIsModalBackupOpen] = useState(false);
+  const [isModalRestoreOpen, setIsModalRestoreOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       if (importedFiles.includes(file.name)) {
         setAlertMessage(`arquivo '${file.name}' já importado`);
         if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+          fileInputRef.current.value = "";
         }
         return;
       }
 
       await importTransactions(file);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
-  const handleJsonUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJsonUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       if (importedFiles.includes(file.name)) {
         setAlertMessage(`arquivo '${file.name}' já importado`);
         if (jsonInputRef.current) {
-          jsonInputRef.current.value = '';
+          jsonInputRef.current.value = "";
         }
         return;
       }
 
       await importFromJson(file);
       if (jsonInputRef.current) {
-        jsonInputRef.current.value = '';
+        jsonInputRef.current.value = "";
       }
     }
   };
@@ -54,15 +74,18 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto">
-
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black shadow-lg">
               <Wallet className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl w-56 font-bold tracking-tight text-gray-900 dark:text-white">Controle Financeiro</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Visão geral das suas finanças</p>
+              <h1 className="text-2xl w-56 font-bold tracking-tight text-gray-900 dark:text-white">
+                Controle Financeiro
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Visão geral das suas finanças
+              </p>
             </div>
           </div>
 
@@ -102,7 +125,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="relative group">
               <button
-                onClick={exportToJson}
+                onClick={() => setIsModalBackupOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-[#2563EB]! dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-[#1D4ED8] dark:hover:bg-gray-800 transition-colors shadow-sm"
               >
                 <Download className="w-4 h-4" />
@@ -123,7 +146,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="relative group">
               <button
-                onClick={() => jsonInputRef.current?.click()}
+                onClick={() => setIsModalRestoreOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-[#FB923C]! dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-[#EA580C]! dark:hover:bg-gray-800 transition-colors shadow-sm"
               >
                 <Upload className="w-4 h-4" />
@@ -133,7 +156,6 @@ export const Dashboard: React.FC = () => {
                 Restaurar
               </span>
             </div>
-
           </div>
         </header>
 
@@ -141,7 +163,11 @@ export const Dashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <TransactionList transactions={transactions} onDelete={deleteTransaction} onUpdate={updateTransaction} />
+            <TransactionList
+              transactions={transactions}
+              onDelete={deleteTransaction}
+              onUpdate={updateTransaction}
+            />
           </div>
           <div className="lg:col-span-1 space-y-8">
             <TopExpenses expenses={topExpenses} />
@@ -150,12 +176,19 @@ export const Dashboard: React.FC = () => {
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
               <h3 className="text-lg font-semibold mb-2">Dica Financeira</h3>
               <p className="text-purple-100 text-sm leading-relaxed relative z-10">
-                Seus gastos fixos representam {summary.totalExpense > 0 ? ((summary.fixedExpenses / summary.totalExpense) * 100).toFixed(0) : 0}% das suas despesas totais neste mês. Manter este número abaixo de 50% é ideal para uma saúde financeira sólida!
+                Seus gastos fixos representam{" "}
+                {summary.totalExpense > 0
+                  ? (
+                      (summary.fixedExpenses / summary.totalExpense) *
+                      100
+                    ).toFixed(0)
+                  : 0}
+                % das suas despesas totais neste mês. Manter este número abaixo
+                de 50% é ideal para uma saúde financeira sólida!
               </p>
             </div>
           </div>
         </div>
-
       </div>
 
       <TransactionModal
@@ -164,10 +197,38 @@ export const Dashboard: React.FC = () => {
         onSave={addTransaction}
       />
 
+      <ConfirmModal
+        isOpen={isModalBackupOpen}
+        onClose={() => setIsModalBackupOpen(false)}
+        onConfirm={() => {
+          exportToJson();
+          setIsModalBackupOpen(false);
+        }}
+        title="Backup"
+        description="Deseja fazer o backup?"
+        confirmText="Backup"
+        cancelText="Cancelar"
+      />
+
+      <ConfirmModal
+        isOpen={isModalRestoreOpen}
+        onClose={() => setIsModalRestoreOpen(false)}
+        onConfirm={() => {
+          jsonInputRef.current?.click();
+          setIsModalRestoreOpen(false);
+        }}
+        title="Restore"
+        description="Restaurar a partir de um arquivo JSON?"
+        confirmText="Restaurar"
+        cancelText="Cancelar"
+      />
+
       {alertMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1a1a1a] rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Aviso</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Aviso
+            </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               {alertMessage}
             </p>
@@ -180,12 +241,16 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
       {isClearModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1a1a1a] rounded-xl w-full max-w-sm shadow-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Limpar Todos os Dados</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Limpar Todos os Dados
+            </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Tem certeza que deseja excluir todas as transações e o histórico de importação? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir todas as transações e o histórico
+              de importação? Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3">
               <button
@@ -194,6 +259,7 @@ export const Dashboard: React.FC = () => {
               >
                 Cancelar
               </button>
+
               <button
                 onClick={() => {
                   clearAllData();
