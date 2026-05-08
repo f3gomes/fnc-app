@@ -5,6 +5,28 @@ import type { Transaction } from "../types/finance";
 
 type CsvRow = Record<string, string | undefined>;
 
+const isCreditCardPayment = (description: string): boolean => {
+  const lower = description.toLowerCase().trim();
+
+  const paymentKeywords = [
+    "pagamento de fatura",
+    "pagamento efetuado",
+    "pagamento cartão",
+    "pagamento cartao",
+    "pagto fatura",
+    "pgto fatura",
+    "fatura cartão",
+    "fatura cartao",
+    "quitacao fatura",
+    "quitação fatura",
+    "pagamento recebido",
+    "credito de pagamento",
+    "crédito de pagamento",
+  ];
+
+  return paymentKeywords.some((keyword) => lower.includes(keyword));
+};
+
 const isObviousExpense = (desc: string): boolean => {
   const lowerDesc = desc.toLowerCase();
   for (const [category, keywords] of Object.entries(categoryKeywords)) {
@@ -129,9 +151,11 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
 
         const isCreditCard = isNameCreditCard || isPatternCreditCard;
 
-        const transactions: Transaction[] = parsedRows.map(
-          ({ rawDate, rawDesc, value }) => {
+        const transactions: Transaction[] = parsedRows
+          .filter(({ rawDesc }) => !isCreditCardPayment(rawDesc))
+          .map(({ rawDate, rawDesc, value }) => {
             const date = normalizeDate(rawDate);
+
             const { category, type, isFixed } = inferCategoryAndType(
               rawDesc,
               value,
@@ -139,6 +163,7 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
             );
 
             let finalValue = value;
+
             if (type === "expense" && finalValue > 0) {
               finalValue = -finalValue;
             } else if (type === "income" && finalValue < 0) {
@@ -154,8 +179,7 @@ export const parseCsv = (file: File): Promise<Transaction[]> => {
               category,
               isFixed,
             };
-          },
-        );
+          });
 
         resolve(transactions);
       },
