@@ -1,24 +1,24 @@
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = "income" | "expense";
 
 export type Category =
-  | 'Housing'
-  | 'Food'
-  | 'Transport'
-  | 'Health'
-  | 'Education'
-  | 'Leisure'
-  | 'Income'
-  | 'Other';
+  | "Housing"
+  | "Food"
+  | "Transport"
+  | "Health"
+  | "Education"
+  | "Leisure"
+  | "Income"
+  | "Other";
 
 export const categoryPtBrMap: Record<Category, string> = {
-  Housing: 'Moradia',
-  Food: 'Alimentação',
-  Transport: 'Transporte',
-  Health: 'Saúde',
-  Education: 'Educação',
-  Leisure: 'Lazer',
-  Income: 'Renda',
-  Other: 'Outros',
+  Housing: "Moradia",
+  Food: "Alimentação",
+  Transport: "Transporte",
+  Health: "Saúde",
+  Education: "Educação",
+  Leisure: "Lazer",
+  Income: "Renda",
+  Other: "Outros",
 };
 
 export const translateCategory = (category: Category): string => {
@@ -33,6 +33,7 @@ export interface Transaction {
   type: TransactionType;
   category: Category;
   isFixed: boolean;
+  excludeFromTopExpenses?: boolean;
 }
 
 export interface FinanceSummary {

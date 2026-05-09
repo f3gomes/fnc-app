@@ -20,7 +20,9 @@ export const Dashboard: React.FC = () => {
     updateTransaction,
     exportToJson,
     importFromJson,
+    deleteExpenseGroup,
   } = useFinanceData();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -170,7 +172,10 @@ export const Dashboard: React.FC = () => {
             />
           </div>
           <div className="lg:col-span-1 space-y-8">
-            <TopExpenses expenses={topExpenses} />
+            <TopExpenses
+              expenses={topExpenses}
+              onDeleteGroup={deleteExpenseGroup}
+            />
 
             <div className="bg-linear-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
