@@ -5,6 +5,7 @@ import {
   Tag,
   Calendar,
   Trash2,
+  ArrowUp,
 } from "lucide-react";
 import {
   translateCategory,
@@ -21,6 +22,7 @@ interface TransactionListProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Transaction>) => void;
   focusedTransactionId?: string | null;
+  onClearFocus: () => void;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -28,10 +30,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   onDelete,
   onUpdate,
   focusedTransactionId,
+  onClearFocus,
 }) => {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [categoryModal, setCategoryModal] = useState<null | string>(null);
   const [toggleFixedModal, setToggleFixedModal] = useState<null | string>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const focusedElementRef = useRef<HTMLDivElement | null>(null);
 
   const transactionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -46,6 +51,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     [transactions, selectedTransactionId],
   );
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   useEffect(() => {
     if (!focusedTransactionId) return;
 
@@ -58,6 +70,39 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       });
     }
   }, [focusedTransactionId]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!focusedTransactionId) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        focusedElementRef.current &&
+        !focusedElementRef.current.contains(target)
+      ) {
+        onClearFocus();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [focusedTransactionId, onClearFocus]);
 
   if (transactions.length === 0) {
     return (
@@ -73,173 +118,199 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Transações Recentes
-        </h3>
-      </div>
+    <>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Transações Recentes
+          </h3>
+        </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-400 dark:text-gray-500 uppercase bg-gray-50/50 dark:bg-gray-800/50">
-            <tr>
-              <th scope="col" className="px-6 py-4 font-medium">
-                Descrição
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium">
-                Data
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium">
-                Categoria
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-right">
-                Valor
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-center">
-                Ações
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {sorted.map((t) => (
-              <tr
-                key={t.id}
-                ref={(el) => {
-                  transactionRefs.current[t.id] = el;
-                }}
-                className={cn(
-                  "rounded-xl transition-colors",
-                  focusedTransactionId === t.id &&
-                    "ring-2 ring-orange-400 bg-orange-50 dark:bg-orange-900/20",
-                )}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-full ${t.type === "income" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}
-                    >
-                      {t.type === "income" ? (
-                        <ArrowUpRight className="w-4 h-4" />
-                      ) : (
-                        <ArrowDownRight className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {t.description}
-                      </p>
-
-                      {t.type === "expense" && (
-                        <button
-                          onClick={() => setToggleFixedModal(t.id)}
-                          className={cn(
-                            "inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full hover:opacity-80 transition-colors",
-                            t.isFixed
-                              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
-                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
-                          )}
-                        >
-                          {t.isFixed ? "Gasto Fixo" : "Gasto Variável"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                    <Calendar className="w-4 h-4" />
-                    {new Intl.DateTimeFormat("pt-BR").format(new Date(t.date))}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-gray-400" />
-                    <button
-                      onClick={() => setCategoryModal(t.id)}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:opacity-80"
-                    >
-                      {translateCategory(t.category)}
-                    </button>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span
-                    className={cn(
-                      "font-semibold flex gap-1",
-                      t.type === "income"
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-red-600 dark:text-red-400",
-                    )}
-                  >
-                    <span>{t.type === "income" ? "+" : "-"} </span>
-
-                    <span>
-                      {new Intl.NumberFormat("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      }).format(Math.abs(t.amount))}
-                    </span>
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <button
-                    onClick={() => setItemToDelete(t.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-gray-400 dark:text-gray-500 uppercase bg-gray-50/50 dark:bg-gray-800/50">
+              <tr>
+                <th scope="col" className="px-6 py-4 font-medium">
+                  Descrição
+                </th>
+                <th scope="col" className="px-6 py-4 font-medium">
+                  Data
+                </th>
+                <th scope="col" className="px-6 py-4 font-medium">
+                  Categoria
+                </th>
+                <th scope="col" className="px-6 py-4 font-medium text-right">
+                  Valor
+                </th>
+                <th scope="col" className="px-6 py-4 font-medium text-center">
+                  Ações
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {sorted.map((t) => (
+                <tr
+                  key={t.id}
+                  ref={(el) => {
+                    transactionRefs.current[t.id] = el;
+
+                    if (focusedTransactionId === t.id) {
+                      focusedElementRef.current = el;
+                    }
+                  }}
+                  className={cn(
+                    "rounded-xl transition-colors",
+                    focusedTransactionId === t.id &&
+                      "ring-2 ring-orange-400 bg-orange-50 dark:bg-orange-900/20",
+                  )}
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`p-2 rounded-full ${t.type === "income" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}
+                      >
+                        {t.type === "income" ? (
+                          <ArrowUpRight className="w-4 h-4" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {t.description}
+                        </p>
+
+                        {t.type === "expense" && (
+                          <button
+                            onClick={() => setToggleFixedModal(t.id)}
+                            className={cn(
+                              "inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full hover:opacity-80 transition-colors",
+                              t.isFixed
+                                ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                                : "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+                            )}
+                          >
+                            {t.isFixed ? "Gasto Fixo" : "Gasto Variável"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-4 h-4" />
+                      {new Intl.DateTimeFormat("pt-BR").format(
+                        new Date(t.date),
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-gray-400" />
+                      <button
+                        onClick={() => setCategoryModal(t.id)}
+                        className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:opacity-80"
+                      >
+                        {translateCategory(t.category)}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span
+                      className={cn(
+                        "font-semibold flex gap-1",
+                        t.type === "income"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-600 dark:text-red-400",
+                      )}
+                    >
+                      <span>{t.type === "income" ? "+" : "-"} </span>
+
+                      <span>
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(Math.abs(t.amount))}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => setItemToDelete(t.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <ToggleFixedModal
+          isOpen={!!toggleFixedModal && !!selectedTransaction}
+          isFixed={!!selectedTransaction?.isFixed}
+          onClose={() => setToggleFixedModal(null)}
+          onConfirm={() => {
+            if (selectedTransaction) {
+              onUpdate(selectedTransaction.id, {
+                isFixed: !selectedTransaction.isFixed,
+              });
+            }
+            setToggleFixedModal(null);
+          }}
+        />
+
+        <CategoryModal
+          isOpen={!!categoryModal && !!selectedTransaction}
+          currentCategory={selectedTransaction?.category as Category}
+          onClose={() => setCategoryModal(null)}
+          onChange={(category) => {
+            if (selectedTransaction) {
+              onUpdate(selectedTransaction.id, { category });
+            }
+            setCategoryModal(null);
+          }}
+        />
+
+        <DeleteTransactionModal
+          title={"Excluir Transação"}
+          confirmText="Sim"
+          cancelText="Cancelar"
+          isOpen={!!itemToDelete}
+          description={
+            "Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+          }
+          onClose={() => setItemToDelete(null)}
+          onConfirm={() => {
+            if (itemToDelete) {
+              onDelete(itemToDelete);
+            }
+            setItemToDelete(null);
+          }}
+        />
       </div>
 
-      <ToggleFixedModal
-        isOpen={!!toggleFixedModal && !!selectedTransaction}
-        isFixed={!!selectedTransaction?.isFixed}
-        onClose={() => setToggleFixedModal(null)}
-        onConfirm={() => {
-          if (selectedTransaction) {
-            onUpdate(selectedTransaction.id, {
-              isFixed: !selectedTransaction.isFixed,
-            });
-          }
-          setToggleFixedModal(null);
-        }}
-      />
-
-      <CategoryModal
-        isOpen={!!categoryModal && !!selectedTransaction}
-        currentCategory={selectedTransaction?.category as Category}
-        onClose={() => setCategoryModal(null)}
-        onChange={(category) => {
-          if (selectedTransaction) {
-            onUpdate(selectedTransaction.id, { category });
-          }
-          setCategoryModal(null);
-        }}
-      />
-
-      <DeleteTransactionModal
-        title={"Excluir Transação"}
-        confirmText="Sim"
-        cancelText="Cancelar"
-        isOpen={!!itemToDelete}
-        description={
-          "Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
-        }
-        onClose={() => setItemToDelete(null)}
-        onConfirm={() => {
-          if (itemToDelete) {
-            onDelete(itemToDelete);
-          }
-          setItemToDelete(null);
-        }}
-      />
-    </div>
+      <button
+        onClick={scrollToTop}
+        className={cn(
+          "fixed bottom-6 right-6 z-40",
+          "p-3 rounded-full shadow-lg",
+          "bg-black dark:bg-white",
+          "text-white dark:text-black",
+          "transition-all duration-300",
+          "hover:scale-110",
+          "active:scale-95",
+          showScrollTop
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 translate-y-4 pointer-events-none",
+        )}
+      >
+        <ArrowUp className="w-5 h-5" />
+      </button>
+    </>
   );
 };

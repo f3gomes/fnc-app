@@ -172,9 +172,11 @@ export const Dashboard: React.FC = () => {
               transactions={transactions}
               onDelete={deleteTransaction}
               onUpdate={updateTransaction}
+              onClearFocus={() => setFocusedTransactionId(null)}
               focusedTransactionId={focusedTransactionId}
             />
           </div>
+
           <div className="lg:col-span-1 space-y-8">
             <TopExpenses
               expenses={topExpenses}
