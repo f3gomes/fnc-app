@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -20,16 +20,20 @@ interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Transaction>) => void;
+  focusedTransactionId?: string | null;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   onDelete,
   onUpdate,
+  focusedTransactionId,
 }) => {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [categoryModal, setCategoryModal] = useState<null | string>(null);
   const [toggleFixedModal, setToggleFixedModal] = useState<null | string>(null);
+
+  const transactionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const sorted = [...transactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
@@ -41,6 +45,19 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     () => transactions.find((t) => t.id === selectedTransactionId),
     [transactions, selectedTransactionId],
   );
+
+  useEffect(() => {
+    if (!focusedTransactionId) return;
+
+    const element = transactionRefs.current[focusedTransactionId];
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [focusedTransactionId]);
 
   if (transactions.length === 0) {
     return (
@@ -89,7 +106,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             {sorted.map((t) => (
               <tr
                 key={t.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                ref={(el) => {
+                  transactionRefs.current[t.id] = el;
+                }}
+                className={cn(
+                  "rounded-xl transition-colors",
+                  focusedTransactionId === t.id &&
+                    "ring-2 ring-orange-400 bg-orange-50 dark:bg-orange-900/20",
+                )}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">

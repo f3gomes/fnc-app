@@ -26,6 +26,9 @@ export const Dashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [focusedTransactionId, setFocusedTransactionId] = useState<
+    string | null
+  >(null);
 
   const [isModalBackupOpen, setIsModalBackupOpen] = useState(false);
   const [isModalRestoreOpen, setIsModalRestoreOpen] = useState(false);
@@ -169,12 +172,14 @@ export const Dashboard: React.FC = () => {
               transactions={transactions}
               onDelete={deleteTransaction}
               onUpdate={updateTransaction}
+              focusedTransactionId={focusedTransactionId}
             />
           </div>
           <div className="lg:col-span-1 space-y-8">
             <TopExpenses
               expenses={topExpenses}
               onDeleteGroup={deleteExpenseGroup}
+              onFocusTransaction={setFocusedTransactionId}
             />
 
             <div className="bg-linear-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">

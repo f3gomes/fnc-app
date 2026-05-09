@@ -17,12 +17,14 @@ interface GroupedTransaction extends Transaction {
 
 interface TopExpensesProps {
   expenses: GroupedTransaction[];
-  onDeleteGroup: (id: string, description: string) => void;
+  onDeleteGroup: (id: string, decscription: string) => void;
+  onFocusTransaction: (id: string) => void;
 }
 
 export const TopExpenses: React.FC<TopExpensesProps> = ({
   expenses,
   onDeleteGroup,
+  onFocusTransaction,
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -121,9 +123,14 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({
                       <div className="text-gray-500 dark:text-gray-400 font-medium mb-1">
                         {expense.subTransactions.length} transações agrupadas:
                       </div>
+
                       {expense.subTransactions.map((sub) => (
                         <div
                           key={sub.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onFocusTransaction(sub.id);
+                          }}
                           className="flex flex-col gap-1 p-2 bg-gray-50 dark:bg-gray-800/80 rounded-lg"
                         >
                           <div className="flex justify-between items-start">
@@ -160,7 +167,13 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-start gap-1.5 text-gray-600 dark:text-gray-400">
+                      <div
+                        className="flex items-start gap-1.5 text-gray-600 dark:text-gray-400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onFocusTransaction(expense.id);
+                        }}
+                      >
                         <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                         <span className="wrap-break-word whitespace-normal">
                           {expense.description}
