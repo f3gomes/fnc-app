@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import type { Transaction, TransactionType, Category } from '../types/finance';
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import {
+  type Transaction,
+  type TransactionType,
+  type Category,
+  translateCategory,
+} from "../types/finance";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -8,12 +13,18 @@ interface TransactionModalProps {
   onSave: (transaction: Transaction) => void;
 }
 
-export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, onSave }) => {
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [type, setType] = useState<TransactionType>('expense');
-  const [category, setCategory] = useState<Category>('Other');
+export const TransactionModal: React.FC<TransactionModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+}) => {
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [type, setType] = useState<TransactionType>("expense");
+  const [category, setCategory] = useState<Category>("Other");
   const [isFixed, setIsFixed] = useState(false);
 
   if (!isOpen) return null;
@@ -26,35 +37,47 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
     const newTransaction: Transaction = {
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       description,
-      amount: type === 'expense' ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
+      amount:
+        type === "expense"
+          ? -Math.abs(Number(amount))
+          : Math.abs(Number(amount)),
       date,
       type,
       category,
-      isFixed: type === 'expense' ? isFixed : false
+      isFixed: type === "expense" ? isFixed : false,
     };
 
     onSave(newTransaction);
 
     // Reset form
-    setDescription('');
-    setAmount('');
-    setDate(new Date().toISOString().split('T')[0]);
-    setType('expense');
-    setCategory('Other');
+    setDescription("");
+    setAmount("");
+    setDate(new Date().toISOString().split("T")[0]);
+    setType("expense");
+    setCategory("Other");
     setIsFixed(false);
 
     onClose();
   };
 
   const categories: Category[] = [
-    'Housing', 'Food', 'Transport', 'Health', 'Education', 'Leisure', 'Income', 'Other'
+    "Housing",
+    "Food",
+    "Transport",
+    "Health",
+    "Education",
+    "Leisure",
+    "Income",
+    "Other",
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Nova Transação</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Nova Transação
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -71,21 +94,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setType('expense')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border ${type === 'expense'
-                    ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400'
-                    : 'bg-white border-gray-200 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-                  }`}
+                onClick={() => setType("expense")}
+                className={`px-4 py-2 text-sm font-medium rounded-lg border ${
+                  type === "expense"
+                    ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400"
+                    : "bg-white border-gray-200 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                }`}
               >
                 Despesa
               </button>
               <button
                 type="button"
-                onClick={() => { setType('income'); setCategory('Income'); }}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border ${type === 'income'
-                    ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400'
-                    : 'bg-white border-gray-200 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-                  }`}
+                onClick={() => {
+                  setType("income");
+                  setCategory("Income");
+                }}
+                className={`px-4 py-2 text-sm font-medium rounded-lg border ${
+                  type === "income"
+                    ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400"
+                    : "bg-white border-gray-200 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                }`}
               >
                 Receita
               </button>
@@ -145,13 +173,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
               onChange={(e) => setCategory(e.target.value as Category)}
               className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent outline-none transition-all dark:text-white"
             >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {translateCategory(cat)}
+                </option>
               ))}
             </select>
           </div>
 
-          {type === 'expense' && (
+          {type === "expense" && (
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -160,7 +190,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 onChange={(e) => setIsFixed(e.target.checked)}
                 className="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded focus:ring-black dark:focus:ring-white dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor="isFixed" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="isFixed"
+                className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Despesa Fixa
               </label>
             </div>
