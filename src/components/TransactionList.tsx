@@ -134,7 +134,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   Descrição
                 </th>
                 <th scope="col" className="px-6 py-4 font-medium">
-                  Data
+                  ring Data
                 </th>
                 <th scope="col" className="px-6 py-4 font-medium">
                   Categoria
@@ -160,9 +160,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                     }
                   }}
                   className={cn(
-                    "rounded-xl transition-colors",
+                    "transition-colors",
                     focusedTransactionId === t.id &&
-                      "ring-2 ring-orange-400 bg-orange-50 dark:bg-orange-900/20",
+                      "ring-2 ring-orange-400 bg-orange-50 dark:bg-orange-900/20 w-56",
                   )}
                 >
                   <td className="px-6 py-4">
@@ -197,6 +197,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       </div>
                     </div>
                   </td>
+
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                       <Calendar className="w-4 h-4" />
@@ -205,6 +206,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       )}
                     </div>
                   </td>
+
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4 text-gray-400" />
@@ -216,6 +218,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       </button>
                     </div>
                   </td>
+
                   <td className="px-6 py-4 text-right">
                     <span
                       className={cn(
@@ -235,6 +238,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       </span>
                     </span>
                   </td>
+
                   <td className="px-6 py-4 text-center">
                     <button
                       onClick={() => setItemToDelete(t.id)}

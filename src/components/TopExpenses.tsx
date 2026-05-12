@@ -131,7 +131,7 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({
                             e.stopPropagation();
                             onFocusTransaction(sub.id);
                           }}
-                          className="flex flex-col gap-1 p-2 bg-gray-50 dark:bg-gray-800/80 rounded-lg"
+                          className="flex flex-col gap-1 p-2 bg-gray-50 dark:bg-gray-800/80 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:ring-2 hover:ring-orange-400"
                         >
                           <div className="flex justify-between items-start">
                             <span className="font-medium text-gray-700 dark:text-gray-300 wrap-break-word pr-2">
@@ -168,7 +168,7 @@ export const TopExpenses: React.FC<TopExpensesProps> = ({
                   ) : (
                     <>
                       <div
-                        className="flex items-start gap-1.5 text-gray-600 dark:text-gray-400"
+                        className="flex items-start gap-1.5 p-2 text-gray-600 dark:text-gray-400 hover:ring-2 hover:ring-orange-400 rounded-xl"
                         onClick={(e) => {
                           e.stopPropagation();
                           onFocusTransaction(expense.id);
